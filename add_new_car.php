@@ -13,14 +13,18 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_type'] !== 'agency') {
     exit();
 }
 
+// Handle form submission
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $model = $_POST['model'];
     $number = $_POST['number'];
     $seating_capacity = $_POST['seating_capacity'];
     $rent_per_day = $_POST['rent_per_day'];
 
-    $sql = "INSERT INTO cars (model, number, seating_capacity, rent_per_day) VALUES ('$model', '$number', '$seating_capacity', '$rent_per_day')";
-    if ($conn->query($sql) === TRUE) {
+    $sql = "INSERT INTO cars (model, number, seating_capacity, rent_per_day) VALUES (?, ?, ?, ?)";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ssis", $model, $number, $seating_capacity, $rent_per_day);
+
+    if ($stmt->execute()) {
         echo '<script type="text/javascript">
                 alert("Car added successfully!");
                 window.location.href = "index.php"; // Redirect to a page, e.g., home or car listing
@@ -30,6 +34,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 alert("Error: ' . $conn->error . '");
               </script>';
     }
+
+    $stmt->close();
+    $conn->close();
 }
 ?>
 
